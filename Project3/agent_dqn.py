@@ -5,13 +5,15 @@ import numpy as np
 from collections import deque
 import os
 import sys
+import time  # <-- ADD THIS IMPORT
 
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
 
-
+# We import the Agent class as our base class
 from agent import Agent 
+# We import the DQN model we just built
 from dqn_model import DQN
 """
 you can import any package and define any extra function as you need
@@ -27,9 +29,9 @@ class Agent_DQN(Agent):
         """
         Initialize everything you need here.
         For example: 
-            paramters for neural network 
+            parameters for neural network 
             initialize Q net and target Q net
-            parameters for repaly buffer
+            parameters for replay buffer
             parameters for q-learning; decaying epsilon-greedy
             ...
         """
@@ -56,6 +58,10 @@ class Agent_DQN(Agent):
         self.epsilon = self.eps_start
         self.eps_decay_step = (self.eps_start - self.eps_end) / self.eps_decay_frames
 
+        # --- Training Loop Hyperparameters ---
+        self.n_episodes = 20000  # Total number of episodes to train for
+        self.save_path = "dqn_model.pth" # Path to save the model
+        
         # --- Device Setup ---
         # Set device to GPU (cuda) if available, otherwise CPU
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -91,7 +97,7 @@ class Agent_DQN(Agent):
 
         
         if args.test_dqn:
-            #you can load your model here
+            # If we are in test mode, load a pre-trained model
             print('loading trained model')
             ###########################
             # YOUR IMPLEMENTATION HERE #
@@ -176,13 +182,7 @@ class Agent_DQN(Agent):
         return action
     
     def push(self, state, action, reward, next_state, done):
-        """ You can add additional arguments as you need. 
-        Push new data to buffer and remove the old one if the buffer is full.
-        
-        Hints:
-        -----
-            you can consider deque(maxlen = 10000) list
-    
+        """ 
         Push new data (a transition) to the replay buffer.
         """
         ###########################
@@ -227,7 +227,63 @@ class Agent_DQN(Agent):
 
     def train(self):
         """
-        Implement the training algorithm.
+        Implement your training algorithm here
+        This function is called ONCE by main.py and contains the entire training loop.
+        """
+        ###########################
+        # YOUR IMPLEMENTATION HERE #
+        
+        print("Starting training...")
+        start_time = time.time()
+        rewards_deque = deque(maxlen=100) # For tracking avg reward
+        
+        for i_episode in range(1, self.n_episodes + 1):
+            # Reset environment and get initial state
+            # self.env is provided by the base Agent class
+            state, _ = self.env.reset() 
+            episode_reward = 0
+            
+            while True:
+                # 1. Agent chooses an action
+                action = self.make_action(state, test=False)
+                
+                # 2. Take action in the environment
+                # The env is already wrapped by the 'Environment' class in main.py
+                next_state, reward, done, truncated, info = self.env.step(action)
+                
+                # 3. Push the experience to the agent's memory
+                self.push(state, action, reward, next_state, done)
+                
+                # 4. Tell the agent to train (it will if buffer is ready)
+                self._optimize_model() # <-- CALL THE RENAMED FUNCTION
+                
+                # 5. Update state and total reward
+                state = next_state
+                episode_reward += reward
+                
+                # 6. Check if the episode is over
+                if done or truncated:
+                    break
+            
+            # --- End of Episode ---
+            rewards_deque.append(episode_reward)
+            avg_reward = np.mean(rewards_deque)
+            
+            if i_episode % 100 == 0:
+                elapsed = time.strftime("%H:%M:%S", time.gmtime(time.time() - start_time))
+                print(f'Episode {i_episode}/{self.n_episodes} | Avg Reward (Last 100): {avg_reward:.2f} | Epsilon: {self.epsilon:.4f} | Time: {elapsed}')
+                
+                # Save the model
+                torch.save(self.policy_net.state_dict(), self.save_path)
+
+        print(f"Training finished. Model saved to {self.save_path}")
+        
+        ###########################
+
+
+    def _optimize_model(self):
+        """
+        Implement the optimization step.
         This function is called once per frame (or step) in the main training loop.
         """
         ###########################
