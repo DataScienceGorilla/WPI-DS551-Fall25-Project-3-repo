@@ -73,9 +73,9 @@ class DQN(nn.Module):
         x = F.relu(self.conv3(x))
         
         # Flatten the output for the fully-connected layers
-        # x.view(-1, ...) is a standard way to flatten
+        # x.view(-1, ...) is a standard way to flatten / debug to reshape
         # -1 infers the batch size
-        x = x.view(-1, 64 * 7 * 7)
+        x = x.reshape(-1, 64 * 7 * 7)
         
         # Pass through the first fully-connected layer with ReLU
         x = F.relu(self.fc1(x))
