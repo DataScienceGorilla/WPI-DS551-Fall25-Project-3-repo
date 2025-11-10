@@ -240,7 +240,7 @@ class Agent_DQN(Agent):
         for i_episode in range(1, self.n_episodes + 1):
             # Reset environment and get initial state
             # self.env is provided by the base Agent class
-            state, _ = self.env.reset() 
+            state = self.env.reset() 
             episode_reward = 0
             
             while True:
