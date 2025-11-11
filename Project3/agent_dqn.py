@@ -278,6 +278,7 @@ class Agent_DQN(Agent):
 
         print(f"Training finished. Model saved to {self.save_path}")
         
+        self.env.close()
         ###########################
 
 
@@ -340,5 +341,6 @@ class Agent_DQN(Agent):
         self.steps_done += 1
         if self.steps_done % self.target_update_freq == 0:
             self.target_net.load_state_dict(self.policy_net.state_dict())
-            
+        # Clean up to save memory
+        del states, actions, rewards, next_states, dones, Q_all, Q_expected, Q_next_max, Q_targets, loss    
         ###########################
