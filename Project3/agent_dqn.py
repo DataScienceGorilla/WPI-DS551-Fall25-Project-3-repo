@@ -43,23 +43,23 @@ class Agent_DQN(Agent):
         # --- Hyperparameters ---
         # These are common hyperparameters for DQN.
         # You can also pass these in via the 'args' object.
-        self.buffer_size = 100000  # Size of the replay buffer
+        self.buffer_size = 50000  # Size of the replay buffer
         self.batch_size = 32       # Batch size for training
         self.gamma = 0.99          # Discount factor
         self.learning_rate = 0.0001 # Learning rate for the optimizer
-        self.target_update_freq = 10000 # How often to update the target network (in steps)
+        self.target_update_freq = 2000 # How often to update the target network (in steps)
         
         # Epsilon-greedy parameters for exploration
         self.eps_start = 1.0
         self.eps_end = 0.3
-        self.eps_decay_frames = 1000000 # Over how many frames to decay epsilon
+        self.eps_decay_frames = 800000 # Over how many frames to decay epsilon
         
         # Calculate the decay step size
         self.epsilon = self.eps_start
         self.eps_decay_step = (self.eps_start - self.eps_end) / self.eps_decay_frames
 
         # --- Training Loop Hyperparameters ---
-        self.n_episodes = 8500  # Total number of episodes to train for
+        self.n_episodes = 10000  # Total number of episodes to train for
         self.save_path = "dqn_model.pth" # Path to save the model
         
         # --- Device Setup ---
