@@ -13,7 +13,7 @@ import torch.optim as optim
 
 # We import the Agent class as our base class
 from agent import Agent 
-# We import the DQN model we just built
+# We import the DQN model
 from dqn_model import DQN
 """
 you can import any package and define any extra function as you need
@@ -43,7 +43,7 @@ class Agent_DQN(Agent):
         # --- Hyperparameters ---
         # These are common hyperparameters for DQN.
         # You can also pass these in via the 'args' object.
-        self.buffer_size = 10000  # Size of the replay buffer
+        self.buffer_size = 100000  # Size of the replay buffer
         self.batch_size = 32       # Batch size for training
         self.gamma = 0.99          # Discount factor
         self.learning_rate = 0.0001 # Learning rate for the optimizer
@@ -52,14 +52,14 @@ class Agent_DQN(Agent):
         # Epsilon-greedy parameters for exploration
         self.eps_start = 1.0
         self.eps_end = 0.1
-        self.eps_decay_frames = 100000 # Over how many frames to decay epsilon
+        self.eps_decay_frames = 1000000 # Over how many frames to decay epsilon
         
         # Calculate the decay step size
         self.epsilon = self.eps_start
         self.eps_decay_step = (self.eps_start - self.eps_end) / self.eps_decay_frames
 
         # --- Training Loop Hyperparameters ---
-        self.n_episodes = 200  # Total number of episodes to train for
+        self.n_episodes = 20000  # Total number of episodes to train for
         self.save_path = "dqn_model.pth" # Path to save the model
         
         # --- Device Setup ---
