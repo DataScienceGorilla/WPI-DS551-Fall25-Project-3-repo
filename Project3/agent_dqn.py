@@ -342,5 +342,8 @@ class Agent_DQN(Agent):
         if self.steps_done % self.target_update_freq == 0:
             self.target_net.load_state_dict(self.policy_net.state_dict())
         # Clean up to save memory
-        del states, actions, rewards, next_states, dones, Q_all, Q_expected, Q_next_max, Q_targets, loss    
+        del states, actions, rewards, next_states, dones, Q_all, Q_expected, Q_next_max, Q_targets, loss
+
+        if self.steps_done % 100 == 0:
+            torch.cuda.empty_cache()    
         ###########################
