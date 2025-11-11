@@ -43,7 +43,7 @@ class Agent_DQN(Agent):
         # --- Hyperparameters ---
         # These are common hyperparameters for DQN.
         # You can also pass these in via the 'args' object.
-        self.buffer_size = 50000  # Size of the replay buffer
+        self.buffer_size = 25000  # Size of the replay buffer
         self.batch_size = 32       # Batch size for training
         self.gamma = 0.99          # Discount factor
         self.learning_rate = 0.0001 # Learning rate for the optimizer
