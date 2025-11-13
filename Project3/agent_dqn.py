@@ -43,7 +43,7 @@ class Agent_DQN(Agent):
         # --- Hyperparameters ---
         # These are common hyperparameters for DQN.
         # You can also pass these in via the 'args' object.
-        self.buffer_size = 45000  # Size of the replay buffer
+        self.buffer_size = 200000  # Size of the replay buffer
         self.batch_size = 32       # Batch size for training
         self.gamma = 0.99          # Discount factor
         self.learning_rate = 0.0005 # Learning rate for the optimizer
@@ -52,7 +52,7 @@ class Agent_DQN(Agent):
         # Epsilon-greedy parameters for exploration
         self.eps_start = 1.0
         self.eps_end = 0.01
-        self.eps_decay_frames = 1250000 # Over how many frames to decay epsilon
+        self.eps_decay_frames = 2500000 # Over how many frames to decay epsilon
         
         # Calculate the decay step size
         self.epsilon = self.eps_start
@@ -230,7 +230,7 @@ class Agent_DQN(Agent):
         # YOUR IMPLEMENTATION HERE #
         
         print("Warming up replay buffer...")
-        while len(self.memory) < 45000:
+        while len(self.memory) < 200000:
             state = self.env.reset()
             done = False
             
