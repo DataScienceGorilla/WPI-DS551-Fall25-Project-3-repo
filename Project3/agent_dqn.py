@@ -46,7 +46,7 @@ class Agent_DQN(Agent):
         self.buffer_size = 45000  # Size of the replay buffer
         self.batch_size = 32       # Batch size for training
         self.gamma = 0.99          # Discount factor
-        self.learning_rate = 0.0001 # Learning rate for the optimizer
+        self.learning_rate = 0.0005 # Learning rate for the optimizer
         self.target_update_freq = 10000 # How often to update the target network (in steps)
         
         # Epsilon-greedy parameters for exploration
@@ -116,11 +116,9 @@ class Agent_DQN(Agent):
         """
         ###########################
         # YOUR IMPLEMENTATION HERE #
-        # For a vanilla DQN, we don't need to reset anything special at the
-        # start of a new game (our epsilon is based on total steps).
+        self.env.step(1)  # Take a fire step to initialize
         ###########################
         pass
-    
     
     def make_action(self, observation, test=True):
         """
@@ -138,8 +136,7 @@ class Agent_DQN(Agent):
         # This is our Epsilon-Greedy action selection
         
         if test:
-            # During testing, we want to be mostly greedy (exploit).
-            # We still add a tiny 1% exploration to avoid getting stuck.
+            # During testing, we use a small fixed epsilon
             epsilon = 0.01 
         else:
             # During training, we use the decaying epsilon
@@ -224,7 +221,38 @@ class Agent_DQN(Agent):
         ###########################
         return states, actions, rewards, next_states, dones
         
-
+    def warmup(self):
+        """
+        Fill the replay buffer with initial random experiences.
+        This function is called once at the beginning of training.
+        """
+        ###########################
+        # YOUR IMPLEMENTATION HERE #
+        
+        print("Warming up replay buffer...")
+        while len(self.memory) < 45000:
+            state = self.env.reset()
+            done = False
+            
+            while not done:
+                # Take a random action
+                action = self.env.get_random_action()
+                
+                # Step the environment
+                next_state, reward, done, truncated, info = self.env.step(action)
+                
+                # Store the transition in the replay buffer
+                self.push(state, action, reward, next_state, done)
+                
+                # Move to the next state
+                state = next_state
+                
+                if done or truncated:
+                    break
+        
+        print("Replay buffer warm-up complete.")
+        ###########################
+        
     def train(self):
         """
         Implement your training algorithm here
@@ -234,6 +262,8 @@ class Agent_DQN(Agent):
         # YOUR IMPLEMENTATION HERE #
         
         print("Starting training...")
+        self.warmup()  # Fill the replay buffer before training starts
+
         start_time = time.time()
         rewards_deque = deque(maxlen=100) # For tracking avg reward
         
@@ -241,6 +271,7 @@ class Agent_DQN(Agent):
             # Reset environment and get initial state
             # self.env is provided by the base Agent class
             state = self.env.reset() 
+            state, _, _, _ = self.env.step(1)  # Take a fire step to initialize
             episode_reward = 0
             
             while True:
@@ -254,14 +285,19 @@ class Agent_DQN(Agent):
                 # 3. Push the experience to the agent's memory
                 self.push(state, action, reward, next_state, done)
                 
+
                 # 4. Tell the agent to train (it will if buffer is ready)
-                self._optimize_model() # <-- CALL THE RENAMED FUNCTION
+                
+                if self.steps_done % 4 == 0:  # Train every 4 steps
+                    self._optimize_model() # <-- CALL THE RENAMED FUNCTION
                 
                 # 5. Update state and total reward
                 state = next_state
                 episode_reward += reward
                 
+
                 # 6. Check if the episode is over
+                self.steps_done += 1
                 if done or truncated:
                     break
             

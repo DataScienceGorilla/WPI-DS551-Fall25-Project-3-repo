@@ -31,7 +31,7 @@ class DQN(nn.Module):
         ###########################
         # YOUR IMPLEMENTATION HERE #
         
-        # This architecture is based on the 2015 Mnih et al. paper
+        # This architecture is straight from the deepmind paper
         # Input shape: (N, 4, 84, 84)
         
         # Conv Layer 1
