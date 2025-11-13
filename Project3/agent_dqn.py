@@ -46,13 +46,13 @@ class Agent_DQN(Agent):
         self.buffer_size = 200000  # Size of the replay buffer
         self.batch_size = 32       # Batch size for training
         self.gamma = 0.99          # Discount factor
-        self.learning_rate = 0.0005 # Learning rate for the optimizer
+        self.learning_rate = 0.0001 # Learning rate for the optimizer
         self.target_update_freq = 10000 # How often to update the target network (in steps)
         
         # Epsilon-greedy parameters for exploration
         self.eps_start = 1.0
         self.eps_end = 0.01
-        self.eps_decay_frames = 2500000 # Over how many frames to decay epsilon
+        self.eps_decay_frames = 1000000 # Over how many frames to decay epsilon
         
         # Calculate the decay step size
         self.epsilon = self.eps_start
@@ -230,7 +230,7 @@ class Agent_DQN(Agent):
         # YOUR IMPLEMENTATION HERE #
         
         print("Warming up replay buffer...")
-        while len(self.memory) < 200000:
+        while len(self.memory) < 100000:
             state = self.env.reset()
             done = False
             
@@ -279,7 +279,7 @@ class Agent_DQN(Agent):
                 action = self.make_action(state, test=False)
                 
                 # 2. Take action in the environment
-                # The env is already wrapped by the 'Environment' class in main.py
+                
                 next_state, reward, done, truncated, info = self.env.step(action)
                 
                 # 3. Push the experience to the agent's memory
@@ -288,16 +288,28 @@ class Agent_DQN(Agent):
 
                 # 4. Tell the agent to train (it will if buffer is ready)
                 
-                if self.steps_done % 4 == 0:  # Train every 4 steps
-                    self._optimize_model() # <-- CALL THE RENAMED FUNCTION
+                #if self.steps_done % 4 == 0:  # Train every 4 steps
+                #    self._optimize_model() # <-- CALL THE RENAMED FUNCTION
                 
                 # 5. Update state and total reward
                 state = next_state
                 episode_reward += reward
                 
-
-                # 6. Check if the episode is over
+                # 7. Train the model (optimize)
+                # We check for learning_starts and train every 4 steps
+                if self.steps_done % 4 == 0:
+                    self._optimize_model()
+                
+                # 8. Update target network
+                # This should also be in the main loop, not _optimize_model
+                if self.steps_done % self.target_update_freq == 0:
+                    self.target_net.load_state_dict(self.policy_net.state_dict())
+                #
                 self.steps_done += 1
+
+                self.epsilon = max(self.eps_end, self.epsilon - self.eps_decay_step)
+
+                #6. Check if the episode is over
                 if done or truncated:
                     break
             
@@ -326,7 +338,8 @@ class Agent_DQN(Agent):
         ###########################
         # YOUR IMPLEMENTATION HERE #
         
-        # 1. Don't train until we have enough samples in the buffer
+        #1. Check if buffer is *full enough to sample*
+        
         if len(self.memory) < self.batch_size:
             return
 
@@ -370,13 +383,13 @@ class Agent_DQN(Agent):
         # --- Update epsilon and target network ---
         
         # 10. Decay epsilon
-        self.epsilon = max(self.eps_end, self.epsilon - self.eps_decay_step)
+        #self.epsilon = max(self.eps_end, self.epsilon - self.eps_decay_step)
         
         # 11. Update the target network
         # This is a "hard update" every 'target_update_freq' steps
-        self.steps_done += 1
-        if self.steps_done % self.target_update_freq == 0:
-            self.target_net.load_state_dict(self.policy_net.state_dict())
+        #self.steps_done += 1
+        #if self.steps_done % self.target_update_freq == 0:
+        #    self.target_net.load_state_dict(self.policy_net.state_dict())
         # Clean up to save memory
         del states, actions, rewards, next_states, dones, Q_all, Q_expected, Q_next_max, Q_targets, loss
 
