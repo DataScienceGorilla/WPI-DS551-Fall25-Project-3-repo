@@ -59,7 +59,7 @@ class Agent_DQN(Agent):
         self.eps_decay_step = (self.eps_start - self.eps_end) / self.eps_decay_frames
 
         # --- Training Loop Hyperparameters ---
-        self.n_episodes = 30000  # Total number of episodes to train for
+        self.n_episodes = 150000  # Total number of episodes to train for
         self.save_path = "dqn_model.pth" # Path to save the model
         
         # --- Device Setup ---
