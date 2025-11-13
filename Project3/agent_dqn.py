@@ -271,7 +271,7 @@ class Agent_DQN(Agent):
             # Reset environment and get initial state
             # self.env is provided by the base Agent class
             state = self.env.reset() 
-            state, _, _, _ = self.env.step(1)  # Take a fire step to initialize
+            state, _, _, _, _ = self.env.step(1)  # Take a fire step to initialize
             episode_reward = 0
             
             while True:
